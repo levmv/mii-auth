@@ -260,23 +260,26 @@ class Auth extends Component
 
         // Load the token and user
         $token = Token::find(['token', '=', $token_str])->one();
-        $user = \call_user_func([$this->user_model, 'one'], $token->user_id);
 
-        if($token === null || $user === null) {
-            // Token is invalid
-            Mii::$app->request->delete_cookie($this->token_cookie);
-            return null;
+        if($token !== null) {
+            $user = \call_user_func([$this->user_model, 'one'], $token->user_id);
+
+            if($user !== null) {
+                // Gen new token
+                $this->set_autologin($token->user_id);
+
+                // Complete the login with the found data
+                $this->complete_login($user);
+
+                $token->delete();
+
+                // Automatic login was successful
+                return $user;
+            }
         }
 
-        // Gen new token
-        $this->set_autologin($token->user_id);
-
-        // Complete the login with the found data
-        $this->complete_login($user);
-
-        $token->delete();
-
-        // Automatic login was successful
-        return $user;
+        // Token is invalid
+        \Mii::$app->request->delete_cookie($this->token_cookie);
+        return null;
     }
 }
