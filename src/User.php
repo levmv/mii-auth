@@ -6,6 +6,7 @@ use Mii;
 use mii\db\DB;
 use mii\db\ORM;
 use mii\db\Query;
+use mii\util\Text;
 
 abstract class User extends ORM
 {
@@ -77,5 +78,38 @@ abstract class User extends ORM
 
         return $list;
     }
+
+    /**
+     * Generates random token where first 16 random bytes and then time of generation
+     *
+     * @return string
+     * @throws \Exception
+     */
+    public static function gen_expiring_token(): string
+    {
+        // Nevermind. Just reducing time accuracy by 2 times
+        $time = pack('N', time() >> 1);
+        return Text::base64url_encode(random_bytes(16) . $time);
+    }
+
+    /**
+     * Checks validity of token from gen_expiring_token()
+     * @param string $token
+     * @param int $ttl
+     * @return bool
+     */
+    public static function is_valid_token(string $token, int $ttl = 3600 * 24): bool
+    {
+        $token = Text::base64url_decode($token);
+        if (\strlen($token) !== 20)
+            return false;
+
+        $data = \unpack('Ntime', substr($token, 16, 4));
+
+        $time = $ttl + $data['time'];
+
+        return ($time > time() >> 1);
+    }
+
 
 }
