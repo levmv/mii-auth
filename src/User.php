@@ -24,7 +24,7 @@ abstract class User extends ORM
 
 
     public function add_role(int $role) {
-        assert(isset(self::$role_names[$role]), "Неизвестная роль");
+        assert(isset(static::$role_names[$role]), "Неизвестная роль");
 
         $this->roles |= $role;
     }
