@@ -10,7 +10,7 @@ use mii\util\Text;
 
 abstract class User extends ORM
 {
-    public function on_change() {
+    protected function on_change() {
         if ($this->changed('password')) {
             $this->password = Mii::$app->auth->hash($this->password);
         }
