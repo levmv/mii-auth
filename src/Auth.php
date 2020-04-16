@@ -35,9 +35,10 @@ class Auth extends Component
     /**
      * Loads Session and configuration options.
      *
-     * @param   array $config Config Options
+     * @param array $config Config Options
      */
-    public function init(array $config = []): void {
+    public function init(array $config = []): void
+    {
         parent::init($config);
         $this->_session = \Mii::$app->session;
     }
@@ -48,8 +49,10 @@ class Auth extends Component
      * Returns FALSE if no user is currently logged in.
      *
      * @return  mixed
+     * @throws \mii\db\ModelNotFoundException
      */
-    public function get_user(): ?User {
+    public function get_user(): ?User
+    {
         if ($this->_user)
             return $this->_user;
 
@@ -62,7 +65,7 @@ class Auth extends Component
             $this->auto_login();
         }
         // If somehow our user was corrupted
-        if(!\is_object($this->_user) || !$this->_user->id)
+        if (!\is_object($this->_user) || !$this->_user->id)
             $this->_user = null;
 
         return $this->_user;
@@ -73,7 +76,8 @@ class Auth extends Component
      * Set current user and store him in session
      * @param User $user
      */
-    public function set_user(User $user) : void {
+    public function set_user(User $user): void
+    {
         $this->_session->set($this->session_key, $user);
         $this->_user = $user;
     }
@@ -82,24 +86,25 @@ class Auth extends Component
     /**
      * Attempt to log in a user by using an ORM object and plain-text password.
      *
-     * @param   string $username Username to log in
-     * @param   string $password Password to check against
-     * @param   boolean $remember Enable autologin
+     * @param string  $username Username to log in
+     * @param string  $password Password to check against
+     * @param boolean $remember Enable autologin
      * @return  boolean
      */
-    public function login($username, $password, $remember = true) {
+    public function login($username, $password, $remember = true): bool
+    {
 
         if (empty($password))
             return false;
 
-        $username = mb_strtolower($username, 'utf-8');
+        $username = mb_strtolower($username);
 
         $user = (new $this->user_model)->find_user($username);
 
         if (!$user)
             return false;
 
-        if ($user->id AND $user->can_login() AND $this->verify_password($password, $user->password)) {
+        if ($user->id && $user->can_login() && $this->verify_password($password, $user->password)) {
             if ($remember === true) {
                 $this->set_autologin($user->id);
             }
@@ -118,11 +123,15 @@ class Auth extends Component
     /**
      * Log a user out and remove any autologin cookies.
      *
-     * @param   boolean $destroy completely destroy the session
-     * @param    boolean $logout_all remove all tokens for user
+     * @param boolean $destroy completely destroy the session
+     * @param boolean $logout_all remove all tokens for user
      * @return  boolean
+     * @throws \mii\core\Exception
+     * @throws \mii\db\DatabaseException
+     * @throws \mii\db\ModelNotFoundException
      */
-    public function logout($destroy = false, $logout_all = false) {
+    public function logout($destroy = false, $logout_all = false): bool
+    {
         // Set by force_login()
         $this->_session->delete('auth_forced');
 
@@ -175,7 +184,8 @@ class Auth extends Component
      * Check if there is an active session. Optionally allows checking for a
      * specific role. By default checking for «login» role.
      */
-    public function logged_in($role = null): bool {
+    public function logged_in($role = null): bool
+    {
         // Get the user from the session
         $user = $this->get_user();
 
@@ -185,20 +195,23 @@ class Auth extends Component
 
     /**
      *
-     * @param   string $password password to hash
+     * @param string $password password to hash
      * @return  string
      */
-    public function hash(string $password): string {
+    public function hash(string $password): string
+    {
         return password_hash($password, PASSWORD_BCRYPT, ['cost' => $this->hash_cost]);
     }
 
 
-    public function verify_password($password, $hash) {
+    public function verify_password($password, $hash)
+    {
         return password_verify($password, $hash);
     }
 
 
-    protected function complete_login($user) {
+    protected function complete_login($user)
+    {
         // Regenerate session_id
         $this->_session->regenerate();
 
@@ -213,10 +226,12 @@ class Auth extends Component
     /**
      * Compare password with original (hashed). Works for current (logged in) user
      *
-     * @param   string $password
+     * @param string $password
      * @return  boolean
+     * @throws \mii\db\ModelNotFoundException
      */
-    public function check_password($password) {
+    public function check_password($password): bool
+    {
         $user = $this->get_user();
 
         if (!$user)
@@ -229,11 +244,12 @@ class Auth extends Component
     /**
      * Forces a user to be logged in, without specifying a password.
      *
-     * @param   User $user
-     * @param   boolean $mark_session_as_forced mark the session as forced
+     * @param User    $user
+     * @param boolean $mark_session_as_forced mark the session as forced
      * @return  boolean
      */
-    public function force_login(User $user, $mark_session_as_forced = false) {
+    public function force_login(User $user, $mark_session_as_forced = false)
+    {
 
         if ($mark_session_as_forced === true) {
             // Mark the session as forced, to prevent users from changing account information
@@ -252,19 +268,20 @@ class Auth extends Component
      * @return  mixed
      * @throws \mii\db\ModelNotFoundException
      */
-    public function auto_login(): ?User {
+    public function auto_login(): ?User
+    {
         $token_str = Mii::$app->request->get_cookie($this->token_cookie);
 
-        if(!$token_str)
+        if (!$token_str)
             return null;
 
         // Load the token and user
         $token = Token::find(['token', '=', $token_str])->one();
 
-        if($token !== null) {
+        if ($token !== null) {
             $user = \call_user_func([$this->user_model, 'one'], $token->user_id);
 
-            if($user !== null) {
+            if ($user !== null) {
                 // Gen new token
                 $this->set_autologin($token->user_id);
 

@@ -6,18 +6,21 @@ use mii\db\ORM;
 use mii\db\Query;
 use mii\util\Text;
 
+/**
+ * Class Token
+ * @package levmorozov\auth
+ *
+ * @property int    $id
+ * @property int    $user_id
+ * @property string $token
+ * @property int    $expires
+ */
 class Token extends ORM
 {
-    protected static $table = 'user_tokens';
+    public static $table = 'user_tokens';
 
-    protected $_data = [
-        'id' => 0,
-        'token' => '',
-        'expires' => 0,
-        'user_id' => 0,
-    ];
-
-    public function on_create() {
+    public function on_create()
+    {
         $this->token = Text::base64url_encode(random_bytes(24));
 
         if (mt_rand(1, 100) === 1) {
@@ -29,10 +32,12 @@ class Token extends ORM
     /**
      * Deletes all expired tokens.
      *
+     * @throws \mii\db\DatabaseException
      */
-    public function delete_expired() {
-        (new Query)
-            ->delete($this->get_table())
+    public function delete_expired(): Token
+    {
+        static::query()
+            ->delete()
             ->where('expires', '<', time())
             ->execute();
 
@@ -43,20 +48,14 @@ class Token extends ORM
     /**
      * Loads a token.
      *
-     * @param    string $token
+     * @param string $token
      * @return    Token
      * @return    null
+     * @throws \mii\db\ModelNotFoundException
      */
-    public function get_token($token) {
+    public function get_token(string $token): ?Token
+    {
         return static::find()->where('token', '=', $token)->one();
     }
-
-    public static function delete_all_by_user($user_id) {
-        return static::query()
-            ->delete()
-            ->where('user_id', '=', $user_id)
-            ->execute();
-    }
-
 
 }

@@ -10,28 +10,33 @@ use mii\util\Text;
 
 abstract class User extends ORM
 {
-    protected function on_change() {
+    protected function on_change()
+    {
         if ($this->changed('password')) {
             $this->password = Mii::$app->auth->hash($this->password);
         }
     }
 
-    public function find_user($username) {
+    public function find_user($username)
+    {
         return static::find()->where('username', '=', $username)->one();
     }
 
     abstract public function complete_login();
-    abstract public function can_login() : bool;
+
+    abstract public function can_login(): bool;
 
 
-    public function add_role(int $role) {
+    public function add_role(int $role)
+    {
         assert(isset(static::$role_names[$role]), "Неизвестная роль");
 
         $this->roles |= $role;
     }
 
 
-    public function has_role($roles): bool {
+    public function has_role($roles): bool
+    {
 
         if (!\is_array($roles)) {
             $roles = (array)$roles;
@@ -45,7 +50,8 @@ abstract class User extends ORM
         return false;
     }
 
-    public function update_roles($roles) : void {
+    public function update_roles($roles): void
+    {
 
         $this->roles = 0;
 
@@ -55,12 +61,12 @@ abstract class User extends ORM
     }
 
 
-    public function get_roles() : array
+    public function get_roles(): array
     {
         $list = [];
-        $this->roles = (int) $this->roles;
+        $this->roles = (int)$this->roles;
         foreach (static::$role_names as $role => $name) {
-            if($this->roles & $role)
+            if ($this->roles & $role)
                 $list[] = $role;
         }
 
@@ -68,11 +74,12 @@ abstract class User extends ORM
     }
 
 
-    public function get_roles_desc() {
+    public function get_roles_desc()
+    {
         $list = [];
-        $this->roles = (int) $this->roles;
+        $this->roles = (int)$this->roles;
         foreach (static::$role_names as $role => $name) {
-            if($this->roles & $role)
+            if ($this->roles & $role)
                 $list[] = $name;
         }
 
@@ -95,7 +102,7 @@ abstract class User extends ORM
     /**
      * Checks validity of token from gen_expiring_token()
      * @param string $token
-     * @param int $ttl
+     * @param int    $ttl
      * @return bool
      */
     public static function is_valid_token(string $token, int $ttl = 3600 * 24): bool
