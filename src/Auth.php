@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace levmorozov\auth;
+namespace mii\auth;
 
 use Mii;
 use mii\core\Component;
@@ -19,17 +19,17 @@ class Auth extends Component
      */
     protected $_session;
 
-    protected $_user;
+    protected ?User $_user = null;
 
     protected $user_model = 'app\models\User';
 
-    protected $hash_cost = 8;
+    protected int $hash_cost = 8;
 
-    protected $lifetime = 2592000;
+    protected int $lifetime = 2592000;
 
-    protected $session_key = 'misk';
+    protected string $session_key = 'misk';
 
-    protected $token_cookie = 'mitc';
+    protected string $token_cookie = 'mitc';
 
 
     /**
@@ -57,10 +57,16 @@ class Auth extends Component
             return $this->_user;
 
         if ($this->_session->check_cookie()) {
-            $this->_user = $this->_session->get($this->session_key);
+            try {
+                $this->_user = $this->_session->get($this->session_key);
+            } catch (\Throwable $t) {
+                $this->_user = null;
+                $this->_session->delete($this->session_key);
+                return null;
+            }
         }
 
-        if (!$this->_user AND Mii::$app->request->get_cookie($this->token_cookie, false)) {
+        if (!$this->_user and Mii::$app->request->get_cookie($this->token_cookie, false)) {
             // check for "remembered" login
             $this->auto_login();
         }
@@ -93,7 +99,6 @@ class Auth extends Component
      */
     public function login($username, $password, $remember = true): bool
     {
-
         if (empty($password))
             return false;
 
@@ -142,9 +147,9 @@ class Auth extends Component
             // Clear the autologin token from the database
             $token = (new Token)->get_token($token);
 
-            if ($token AND $token->loaded() AND $logout_all) {
+            if ($token and $token->loaded() and $logout_all) {
                 (new Query)->delete($token->get_table())->where('user_id', '=', $token->user_id)->execute();
-            } elseif ($token AND $token->loaded()) {
+            } elseif ($token and $token->loaded()) {
                 $token->delete();
             }
         }
@@ -189,7 +194,7 @@ class Auth extends Component
         // Get the user from the session
         $user = $this->get_user();
 
-        return $user AND ($role !== null ? $user->has_role($role) : true);
+        return $user and ($role !== null ? $user->has_role($role) : true);
     }
 
 
@@ -204,13 +209,13 @@ class Auth extends Component
     }
 
 
-    public function verify_password($password, $hash)
+    public function verify_password(string $password, string $hash): bool
     {
         return password_verify($password, $hash);
     }
 
 
-    protected function complete_login($user)
+    protected function complete_login(User $user): bool
     {
         // Regenerate session_id
         $this->_session->regenerate();

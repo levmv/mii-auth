@@ -1,11 +1,9 @@
 <?php declare(strict_types=1);
 
-namespace levmorozov\auth;
+namespace mii\auth;
 
 use Mii;
-use mii\db\DB;
 use mii\db\ORM;
-use mii\db\Query;
 use mii\util\Text;
 
 abstract class User extends ORM

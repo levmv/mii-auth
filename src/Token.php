@@ -1,9 +1,8 @@
 <?php declare(strict_types=1);
 
-namespace levmorozov\auth;
+namespace mii\auth;
 
 use mii\db\ORM;
-use mii\db\Query;
 use mii\util\Text;
 
 /**

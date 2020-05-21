@@ -16,7 +16,7 @@
   ],
   "autoload": {
     "psr-4": {
-      "levmorozov\\auth\\": "src/"
+      "mii\\auth\\": "src/"
     }
   }
 }
