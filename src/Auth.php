@@ -255,11 +255,12 @@ class Auth extends Component
      */
     public function force_login(User $user, $mark_session_as_forced = false)
     {
-
         if ($mark_session_as_forced === true) {
             // Mark the session as forced, to prevent users from changing account information
             $this->_session->set('auth_forced', true);
         }
+
+        $this->set_autologin($user->id);
 
         // Run the standard completion
         $this->complete_login($user);
