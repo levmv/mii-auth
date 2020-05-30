@@ -4,6 +4,7 @@ namespace mii\auth;
 
 use Mii;
 use mii\db\ORM;
+use mii\db\Query;
 use mii\util\Text;
 
 abstract class User extends ORM
@@ -15,7 +16,7 @@ abstract class User extends ORM
         }
     }
 
-    public function find_user($username)
+    public function find_user($username): ?self
     {
         return static::find()->where('username', '=', $username)->one();
     }
@@ -35,7 +36,6 @@ abstract class User extends ORM
 
     public function has_role($roles): bool
     {
-
         if (!\is_array($roles)) {
             $roles = (array)$roles;
         }
@@ -50,7 +50,6 @@ abstract class User extends ORM
 
     public function update_roles($roles): void
     {
-
         $this->roles = 0;
 
         foreach ($roles as $role) {
@@ -72,7 +71,7 @@ abstract class User extends ORM
     }
 
 
-    public function get_roles_desc()
+    public function get_roles_desc(): array
     {
         $list = [];
         $this->roles = (int)$this->roles;
@@ -114,6 +113,49 @@ abstract class User extends ORM
         $time = $ttl + $data['time'];
 
         return ($time > time() >> 1);
+    }
+
+
+    /**
+     * Delete all expired verify_codes
+     * @param bool $force
+     */
+    public static function delete_expired_reminders(bool $force = false): void
+    {
+        if ($force || mt_rand(1, 10) === 1) {
+            return;
+        }
+
+        $codes = (new Query())
+            ->select(['id', 'verify_code'])
+            ->from(static::$table)
+            ->where('verify_code', 'IS NOT', null)
+            ->all();
+
+        if (!count($codes)) {
+            return;
+        }
+
+        $tonull = [];
+
+        foreach ($codes as $code) {
+            if (!self::is_valid_token($code['verify_code'])) {
+                $tonull[] = (int)$code['id'];
+            }
+        }
+
+        if (count($tonull)) {
+            (new Query())
+                ->update(static::$table)
+                ->set([
+                        'verify_code' => null
+                    ]
+                )
+                ->where('id', 'IN', $tonull)
+                ->execute();
+
+            Mii::info($tonull, __METHOD__);
+        }
     }
 
 

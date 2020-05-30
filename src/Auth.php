@@ -5,6 +5,7 @@ namespace mii\auth;
 use Mii;
 use mii\core\Component;
 use mii\db\Query;
+use mii\log\Logger;
 use mii\web\Session;
 
 /**
@@ -59,15 +60,16 @@ class Auth extends Component
         if ($this->_session->check_cookie()) {
             try {
                 $this->_user = $this->_session->get($this->session_key);
-            } catch (\Throwable $t) {
+            } catch (\Throwable $e) {
                 $this->_user = null;
                 $this->_session->delete($this->session_key);
+                Mii::error($e, __METHOD__);
                 return null;
             }
         }
 
-        if (!$this->_user and Mii::$app->request->get_cookie($this->token_cookie, false)) {
-            // check for "remembered" login
+        // check for "remembered" login
+        if (!$this->_user && Mii::$app->request->get_cookie($this->token_cookie, false)) {
             $this->auto_login();
         }
         // If somehow our user was corrupted
@@ -301,7 +303,7 @@ class Auth extends Component
             }
         }
 
-        // Token is invalid
+        Mii::log(Logger::NOTICE, "Token is invalid".$token_str, __METHOD__);
         \Mii::$app->request->delete_cookie($this->token_cookie);
         return null;
     }
