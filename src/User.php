@@ -4,7 +4,6 @@ namespace mii\auth;
 
 use Mii;
 use mii\db\ORM;
-use mii\db\Query;
 use mii\util\Text;
 
 abstract class User extends ORM
@@ -30,7 +29,7 @@ abstract class User extends ORM
     {
         assert(isset(static::$role_names[$role]), "Неизвестная роль");
 
-        if($this->get('roles') === null) {
+        if ($this->get('roles') === null) {
             $this->roles = $role;
         } else {
             $this->roles |= $role;
@@ -130,36 +129,32 @@ abstract class User extends ORM
             return;
         }
 
-        $codes = (new Query())
-            ->select(['id', 'verify_code'])
-            ->from(static::$table)
-            ->where('verify_code', 'IS NOT', null)
-            ->all();
+        $tonull = [];
 
-        if (!count($codes)) {
+        $codes = static::find()
+            ->select(['id', 'verify_code'])
+            ->where('verify_code', 'IS NOT', null)
+            ->get()
+            ->each(static function (User $u) use ($tonull) {
+                if (!self::is_valid_token($u->verify_code)) {
+                    $tonull[] = $u->id;
+                }
+            });
+
+        if (!count($tonull)) {
             return;
         }
 
-        $tonull = [];
-
-        foreach ($codes as $code) {
-            if (!self::is_valid_token($code['verify_code'])) {
-                $tonull[] = (int)$code['id'];
-            }
-        }
-
-        if (count($tonull)) {
-            (new Query())
-                ->update(static::$table)
-                ->set([
-                        'verify_code' => null
-                    ]
-                )
-                ->where('id', 'IN', $tonull)
-                ->execute();
+         static::query()
+             ->update()
+             ->set([
+                     'verify_code' => null
+                 ]
+             )
+             ->where('id', 'IN', $tonull)
+             ->execute();
 
             Mii::info($tonull, __METHOD__);
-        }
     }
 
 
