@@ -15,14 +15,11 @@ use mii\web\Session;
  */
 class Auth extends Component
 {
-    /**
-     * @var Session
-     */
-    protected $_session;
+    protected Session $_session;
 
     protected ?User $_user = null;
 
-    protected $user_model = 'app\models\User';
+    protected string $user_model = 'app\models\User';
 
     protected int $hash_cost = 8;
 
@@ -54,8 +51,9 @@ class Auth extends Component
      */
     public function get_user(): ?User
     {
-        if ($this->_user)
+        if ($this->_user) {
             return $this->_user;
+        }
 
         if ($this->_session->check_cookie()) {
             try {
@@ -149,9 +147,10 @@ class Auth extends Component
             // Clear the autologin token from the database
             $token = (new Token)->get_token($token);
 
-            if ($token and $token->loaded() and $logout_all) {
+            if ($token && $token->loaded() && $logout_all) {
+
                 (new Query)->delete($token->get_table())->where('user_id', '=', $token->user_id)->execute();
-            } elseif ($token and $token->loaded()) {
+            } elseif ($token && $token->loaded()) {
                 $token->delete();
             }
         }
@@ -284,7 +283,7 @@ class Auth extends Component
             return null;
 
         // Load the token and user
-        $token = Token::find(['token', '=', $token_str])->one();
+        $token = Token::where(['token', '=', $token_str])->one();
 
         if ($token !== null) {
             $user = \call_user_func([$this->user_model, 'one'], $token->user_id);

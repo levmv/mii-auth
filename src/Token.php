@@ -16,7 +16,10 @@ use mii\util\Text;
  */
 class Token extends ORM
 {
-    public static $table = 'user_tokens';
+    public static function table(): string
+    {
+        return 'user_tokens';
+    }
 
     public function on_create()
     {

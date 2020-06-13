@@ -4,7 +4,7 @@
   "type": "library",
   "minimum-stability": "dev",
   "require": {
-    "levmorozov/mii": "~1.9.0",
+    "levmorozov/mii": ">1.9.0",
     "php": ">=7.4"
   },
   "license": "MIT",

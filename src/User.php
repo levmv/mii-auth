@@ -30,7 +30,11 @@ abstract class User extends ORM
     {
         assert(isset(static::$role_names[$role]), "Неизвестная роль");
 
-        $this->roles |= $role;
+        if($this->get('roles') === null) {
+            $this->roles = $role;
+        } else {
+            $this->roles |= $role;
+        }
     }
 
 
