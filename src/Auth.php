@@ -49,13 +49,13 @@ class Auth extends Component
      * @return  mixed
      * @throws \mii\db\ModelNotFoundException
      */
-    public function get_user(): ?User
+    public function getUser(): ?User
     {
         if ($this->_user) {
             return $this->_user;
         }
 
-        if ($this->_session->check_cookie()) {
+        if ($this->_session->checkCookie()) {
             try {
                 $this->_user = $this->_session->get($this->session_key);
             } catch (\Throwable $e) {
@@ -67,8 +67,8 @@ class Auth extends Component
         }
 
         // check for "remembered" login
-        if (!$this->_user && Mii::$app->request->get_cookie($this->token_cookie, false)) {
-            $this->auto_login();
+        if (!$this->_user && Mii::$app->request->getCookie($this->token_cookie, false)) {
+            $this->autoLogin();
         }
         // If somehow our user was corrupted
         if (!\is_object($this->_user) || !$this->_user->id)
@@ -82,7 +82,7 @@ class Auth extends Component
      * Set current user and store him in session
      * @param User $user
      */
-    public function set_user(User $user): void
+    public function setUser(User $user): void
     {
         $this->_session->set($this->session_key, $user);
         $this->_user = $user;
@@ -109,13 +109,13 @@ class Auth extends Component
         if (!$user)
             return false;
 
-        if ($user->id && $user->can_login() && $this->verify_password($password, $user->password)) {
+        if ($user->id && $user->can_login() && $this->verifyPassword($password, $user->password)) {
             if ($remember === true) {
-                $this->set_autologin($user->id);
+                $this->setAutologin($user->id);
             }
 
             // Finish the login
-            $this->complete_login($user);
+            $this->completeLogin($user);
 
             return true;
         }
@@ -140,12 +140,12 @@ class Auth extends Component
         // Set by force_login()
         $this->_session->delete('auth_forced');
 
-        if ($token = Mii::$app->request->get_cookie($this->token_cookie)) {
+        if ($token = Mii::$app->request->getCookie($this->token_cookie)) {
             // Delete the autologin cookie to prevent re-login
-            Mii::$app->request->delete_cookie($this->token_cookie);
+            Mii::$app->request->deleteCookie($this->token_cookie);
 
             // Clear the autologin token from the database
-            $token = (new Token)->get_token($token);
+            $token = (new Token)->getToken($token);
 
             if ($token && $token->loaded() && $logout_all) {
 
@@ -169,10 +169,10 @@ class Auth extends Component
         $this->_user = null;
 
         // Double check
-        return !$this->logged_in();
+        return !$this->loggedIn();
     }
 
-    public function set_autologin($user_id)
+    public function setAutologin($user_id)
     {
         // Create a new autologin token
         $token = (new Token)->set([
@@ -182,7 +182,7 @@ class Auth extends Component
         $token->create();
 
         // Set the autologin cookie
-        Mii::$app->request->set_cookie($this->token_cookie, $token->token, $this->lifetime);
+        Mii::$app->request->setCookie($this->token_cookie, $token->token, $this->lifetime);
     }
 
 
@@ -190,12 +190,12 @@ class Auth extends Component
      * Check if there is an active session. Optionally allows checking for a
      * specific role. By default checking for «login» role.
      */
-    public function logged_in($role = null): bool
+    public function loggedIn($role = null): bool
     {
         // Get the user from the session
-        $user = $this->get_user();
+        $user = $this->getUser();
 
-        return $user and ($role !== null ? $user->has_role($role) : true);
+        return $user and ($role !== null ? $user->hasRole($role) : true);
     }
 
 
@@ -210,20 +210,20 @@ class Auth extends Component
     }
 
 
-    public function verify_password(string $password, string $hash): bool
+    public function verifyPassword(string $password, string $hash): bool
     {
         return password_verify($password, $hash);
     }
 
 
-    protected function complete_login(User $user): bool
+    protected function completeLogin(User $user): bool
     {
         // Regenerate session_id
         $this->_session->regenerate();
 
-        $this->set_user($user);
+        $this->setUser($user);
 
-        $user->complete_login();
+        $user->completeLogin();
 
         return true;
     }
@@ -236,9 +236,9 @@ class Auth extends Component
      * @return  boolean
      * @throws \mii\db\ModelNotFoundException
      */
-    public function check_password($password): bool
+    public function checkPassword($password): bool
     {
-        $user = $this->get_user();
+        $user = $this->getUser();
 
         if (!$user)
             return false;
@@ -254,17 +254,17 @@ class Auth extends Component
      * @param boolean $mark_session_as_forced mark the session as forced
      * @return  boolean
      */
-    public function force_login(User $user, $mark_session_as_forced = false)
+    public function forceLogin(User $user, $mark_session_as_forced = false)
     {
         if ($mark_session_as_forced === true) {
             // Mark the session as forced, to prevent users from changing account information
             $this->_session->set('auth_forced', true);
         }
 
-        $this->set_autologin($user->id);
+        $this->setAutologin($user->id);
 
         // Run the standard completion
-        $this->complete_login($user);
+        $this->completeLogin($user);
 
         return true;
     }
@@ -275,9 +275,9 @@ class Auth extends Component
      * @return  mixed
      * @throws \mii\db\ModelNotFoundException
      */
-    public function auto_login(): ?User
+    public function autoLogin(): ?User
     {
-        $token_str = Mii::$app->request->get_cookie($this->token_cookie);
+        $token_str = Mii::$app->request->getCookie($this->token_cookie);
 
         if (!$token_str)
             return null;
@@ -290,10 +290,10 @@ class Auth extends Component
 
             if ($user !== null) {
                 // Gen new token
-                $this->set_autologin($token->user_id);
+                $this->setAutologin($token->user_id);
 
                 // Complete the login with the found data
-                $this->complete_login($user);
+                $this->completeLogin($user);
 
                 $token->delete();
 
@@ -303,7 +303,7 @@ class Auth extends Component
         }
 
         Mii::log(Logger::NOTICE, "Token is invalid".$token_str, __METHOD__);
-        \Mii::$app->request->delete_cookie($this->token_cookie);
+        \Mii::$app->request->deleteCookie($this->token_cookie);
         return null;
     }
 }

@@ -21,13 +21,13 @@ class Token extends ORM
         return 'user_tokens';
     }
 
-    public function on_create()
+    public function onCreate()
     {
-        $this->token = Text::base64url_encode(random_bytes(24));
+        $this->token = Text::b64Encode(random_bytes(24));
 
         if (mt_rand(1, 100) === 1) {
             // Do garbage collection
-            $this->delete_expired();
+            $this->deleteExpired();
         }
     }
 
@@ -36,7 +36,7 @@ class Token extends ORM
      *
      * @throws \mii\db\DatabaseException
      */
-    public function delete_expired(): Token
+    public function deleteExpired(): Token
     {
         static::query()
             ->delete()
@@ -55,7 +55,7 @@ class Token extends ORM
      * @return    null
      * @throws \mii\db\ModelNotFoundException
      */
-    public function get_token(string $token): ?Token
+    public function getToken(string $token): ?Token
     {
         return static::find()->where('token', '=', $token)->one();
     }

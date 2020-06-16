@@ -8,24 +8,24 @@ use mii\util\Text;
 
 abstract class User extends ORM
 {
-    protected function on_change()
+    protected function onChange()
     {
         if ($this->changed('password')) {
             $this->password = Mii::$app->auth->hash($this->password);
         }
     }
 
-    public function find_user($username): ?self
+    public function findUser($username): ?self
     {
         return static::find()->where('username', '=', $username)->one();
     }
 
-    abstract public function complete_login();
+    abstract public function completeLogin();
 
-    abstract public function can_login(): bool;
+    abstract public function canLogin(): bool;
 
 
-    public function add_role(int $role)
+    public function addRole(int $role)
     {
         assert(isset(static::$role_names[$role]), "Неизвестная роль");
 
@@ -37,7 +37,7 @@ abstract class User extends ORM
     }
 
 
-    public function has_role($roles): bool
+    public function hasRole($roles): bool
     {
         if (!\is_array($roles)) {
             $roles = (array)$roles;
@@ -51,7 +51,7 @@ abstract class User extends ORM
         return false;
     }
 
-    public function update_roles($roles): void
+    public function updateRoles($roles): void
     {
         $this->roles = 0;
 
@@ -61,7 +61,7 @@ abstract class User extends ORM
     }
 
 
-    public function get_roles(): array
+    public function getRoles(): array
     {
         $list = [];
         $this->roles = (int)$this->roles;
@@ -74,7 +74,7 @@ abstract class User extends ORM
     }
 
 
-    public function get_roles_desc(): array
+    public function getRolesDesc(): array
     {
         $list = [];
         $this->roles = (int)$this->roles;
@@ -92,11 +92,11 @@ abstract class User extends ORM
      * @return string
      * @throws \Exception
      */
-    public static function gen_expiring_token(): string
+    public static function genExpiringToken(): string
     {
         // Nevermind. Just reducing time accuracy by 2 times
         $time = pack('N', time() >> 1);
-        return Text::base64url_encode(random_bytes(16) . $time);
+        return Text::b64Encode(random_bytes(16) . $time);
     }
 
     /**
@@ -105,9 +105,9 @@ abstract class User extends ORM
      * @param int    $ttl
      * @return bool
      */
-    public static function is_valid_token(string $token, int $ttl = 3600 * 24): bool
+    public static function isValidToken(string $token, int $ttl = 3600 * 24): bool
     {
-        $token = Text::base64url_decode($token);
+        $token = Text::b64Decode($token);
         if (\strlen($token) !== 20)
             return false;
 
@@ -123,7 +123,7 @@ abstract class User extends ORM
      * Delete all expired verify_codes
      * @param bool $force
      */
-    public static function delete_expired_reminders(bool $force = false): void
+    public static function deleteExpiredReminders(bool $force = false): void
     {
         if ($force || mt_rand(1, 10) === 1) {
             return;
@@ -136,7 +136,7 @@ abstract class User extends ORM
             ->where('verify_code', 'IS NOT', null)
             ->get()
             ->each(static function (User $u) use ($tonull) {
-                if (!self::is_valid_token($u->verify_code)) {
+                if (!self::isValidToken($u->verify_code)) {
                     $tonull[] = $u->id;
                 }
             });
