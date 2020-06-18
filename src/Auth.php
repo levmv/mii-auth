@@ -104,12 +104,12 @@ class Auth extends Component
 
         $username = mb_strtolower($username);
 
-        $user = (new $this->user_model)->find_user($username);
+        $user = (new $this->user_model)->findUser($username);
 
         if (!$user)
             return false;
 
-        if ($user->id && $user->can_login() && $this->verifyPassword($password, $user->password)) {
+        if ($user->id && $user->canLogin() && $this->verifyPassword($password, $user->password)) {
             if ($remember === true) {
                 $this->setAutologin($user->id);
             }
@@ -149,7 +149,7 @@ class Auth extends Component
 
             if ($token && $token->loaded() && $logout_all) {
 
-                (new Query)->delete($token->get_table())->where('user_id', '=', $token->user_id)->execute();
+                (new Query)->delete($token::table())->where('user_id', '=', $token->user_id)->execute();
             } elseif ($token && $token->loaded()) {
                 $token->delete();
             }
