@@ -44,8 +44,9 @@ abstract class User extends ORM
         }
 
         foreach ($roles as $role) {
-            if ((int)$this->roles & $role)
+            if ((int)$this->roles & $role) {
                 return true;
+            }
         }
 
         return false;
@@ -66,8 +67,9 @@ abstract class User extends ORM
         $list = [];
         $this->roles = (int)$this->roles;
         foreach (static::$role_names as $role => $name) {
-            if ($this->roles & $role)
+            if ($this->roles & $role) {
                 $list[] = $role;
+            }
         }
 
         return $list;
@@ -79,8 +81,9 @@ abstract class User extends ORM
         $list = [];
         $this->roles = (int)$this->roles;
         foreach (static::$role_names as $role => $name) {
-            if ($this->roles & $role)
+            if ($this->roles & $role) {
                 $list[] = $name;
+            }
         }
 
         return $list;
@@ -108,8 +111,9 @@ abstract class User extends ORM
     public static function isValidToken(string $token, int $ttl = 3600 * 24): bool
     {
         $token = Text::b64Decode($token);
-        if (\strlen($token) !== 20)
+        if (\strlen($token) !== 20) {
             return false;
+        }
 
         $data = \unpack('Ntime', substr($token, 16, 4));
 
@@ -145,17 +149,16 @@ abstract class User extends ORM
             return;
         }
 
-         static::query()
+        static::query()
              ->update()
-             ->set([
+             ->set(
+                 [
                      'verify_code' => null
                  ]
              )
              ->where('id', 'IN', $tonull)
              ->execute();
 
-            Mii::info($tonull, __METHOD__);
+        Mii::info($tonull, __METHOD__);
     }
-
-
 }

@@ -3,6 +3,7 @@
 namespace mii\auth;
 
 use mii\db\ORM;
+use mii\db\Query;
 use mii\util\Text;
 
 /**
@@ -27,23 +28,28 @@ class Token extends ORM
 
         if (mt_rand(1, 100) === 1) {
             // Do garbage collection
-            $this->deleteExpired();
+            static::deleteExpired();
         }
     }
 
     /**
      * Deletes all expired tokens.
-     *
-     * @throws \mii\db\DatabaseException
      */
-    public function deleteExpired(): Token
+    public static function deleteExpired() : void
     {
         static::query()
             ->delete()
             ->where('expires', '<', time())
             ->execute();
+    }
 
-        return $this;
+
+    public function deleteAllUserTokens(int $user_id)
+    {
+        return static::query()
+            ->delete()
+            ->where('user_id', '=', $user_id)
+            ->execute();
     }
 
 
@@ -53,11 +59,9 @@ class Token extends ORM
      * @param string $token
      * @return    Token
      * @return    null
-     * @throws \mii\db\ModelNotFoundException
      */
     public function getToken(string $token): ?Token
     {
         return static::find()->where('token', '=', $token)->one();
     }
-
 }

@@ -71,8 +71,9 @@ class Auth extends Component
             $this->autoLogin();
         }
         // If somehow our user was corrupted
-        if (!\is_object($this->_user) || !$this->_user->id)
+        if (!\is_object($this->_user) || !$this->_user->id) {
             $this->_user = null;
+        }
 
         return $this->_user;
     }
@@ -97,17 +98,19 @@ class Auth extends Component
      * @param boolean $remember Enable autologin
      * @return  boolean
      */
-    public function login($username, $password, $remember = true): bool
+    public function login(string $username, string $password, bool $remember = true): bool
     {
-        if (empty($password))
+        if (empty($password)) {
             return false;
+        }
 
         $username = mb_strtolower($username);
 
         $user = (new $this->user_model)->findUser($username);
 
-        if (!$user)
+        if (!$user) {
             return false;
+        }
 
         if ($user->id && $user->canLogin() && $this->verifyPassword($password, $user->password)) {
             if ($remember === true) {
@@ -147,10 +150,9 @@ class Auth extends Component
             // Clear the autologin token from the database
             $token = (new Token)->getToken($token);
 
-            if ($token && $token->loaded() && $logout_all) {
-
+            if ($logout_all && $token) {
                 (new Query)->delete($token::table())->where('user_id', '=', $token->user_id)->execute();
-            } elseif ($token && $token->loaded()) {
+            } elseif ($token) {
                 $token->delete();
             }
         }
@@ -240,8 +242,9 @@ class Auth extends Component
     {
         $user = $this->getUser();
 
-        if (!$user)
+        if (!$user) {
             return false;
+        }
 
         return ($this->hash($password) === $user->password);
     }
@@ -279,8 +282,9 @@ class Auth extends Component
     {
         $token_str = Mii::$app->request->getCookie($this->token_cookie);
 
-        if (!$token_str)
+        if (!$token_str) {
             return null;
+        }
 
         // Load the token and user
         $token = Token::where(['token', '=', $token_str])->one();
