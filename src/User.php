@@ -15,7 +15,7 @@ abstract class User extends ORM
         }
     }
 
-    public function findUser($username): ?self
+    public static function findUser($username): ?self
     {
         return static::find()->where('username', '=', $username)->one();
     }
@@ -23,7 +23,6 @@ abstract class User extends ORM
     abstract public function completeLogin();
 
     abstract public function canLogin(): bool;
-
 
     public function addRole(int $role)
     {
@@ -52,7 +51,7 @@ abstract class User extends ORM
         return false;
     }
 
-    public function updateRoles($roles): void
+    public function updateRoles(array $roles): void
     {
         $this->roles = 0;
 
@@ -160,5 +159,40 @@ abstract class User extends ORM
              ->execute();
 
         Mii::info($tonull, __METHOD__);
+    }
+
+
+    private function create_user(Profile $pf, string $network): User
+    {
+        // lastName может быть пустой, а имя и фамилия прописаны вместе в firstName, исправим это:
+        if (! $pf->lastName && mb_strpos($pf->firstName, ' ') !== false) {
+            [$pf->firstName, $pf->lastName] = explode(' ', $pf->firstName, 2);
+        }
+
+        $user = new User([
+            'name' => e($pf->firstName),
+            'surname' => e($pf->lastName),
+            'username' => $pf->email ?: "$network:{$pf->identifier}",
+            'password' => a()->auth->hash(random_bytes(12)),
+            'roles' => User::ROLE_LOGIN,
+        ]);
+
+        $user->create();
+
+        if ($pf->photoURL) {
+            try {
+                $avatar = new UserAvatar();
+                $avatar->user_id = $user->id;
+                $avatar->create();
+
+                $avatar->uploadFromUrl($pf->photoURL);
+
+                $user->updateAvatar($avatar);
+            } catch (\Throwable $e) {
+                Log::error($e);
+            }
+        }
+
+        return $user;
     }
 }

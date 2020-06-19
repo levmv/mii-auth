@@ -106,7 +106,7 @@ class Auth extends Component
 
         $username = mb_strtolower($username);
 
-        $user = (new $this->user_model)->findUser($username);
+        $user = $this->getUserModel()->findUser($username);
 
         if (!$user) {
             return false;
@@ -125,6 +125,11 @@ class Auth extends Component
 
         // Login failed
         return false;
+    }
+
+    public function getUserModel() : User
+    {
+        return new $this->user_model;
     }
 
 
