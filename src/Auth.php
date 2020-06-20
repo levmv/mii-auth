@@ -153,7 +153,7 @@ class Auth extends Component
             Mii::$app->request->deleteCookie($this->token_cookie);
 
             // Clear the autologin token from the database
-            $token = (new Token)->getToken($token);
+            $token = Token::getToken($token);
 
             if ($logout_all && $token) {
                 (new Query)->delete($token::table())->where('user_id', '=', $token->user_id)->execute();

@@ -2,15 +2,20 @@
 
 namespace mii\auth;
 
+use Hybridauth\Adapter\AdapterInterface;
+use mii\db\DB;
 use mii\log\Log;
 use mii\util\URL;
 
-class SocialAuth extends Auth {
-
+class SocialAuth extends Auth
+{
     public const FACEBOOK = 'fb';
     public const VK = 'vk';
     public const ODNOKLASSNIKI = 'ok';
+    public const YANDEX = 'ya';
     public const INSTAGRAM = 'inst';
+
+    protected bool $join_accounts = true;
 
     /**
      * @var array of providers configuration, like:
@@ -24,63 +29,80 @@ class SocialAuth extends Auth {
     protected array $providers = [];
 
     protected array $providers_classes = [
-        self::FACEBOOK => 'Hybridauth\\Provider\\Facebook'
+        self::FACEBOOK => 'Hybridauth\\Provider\\Facebook',
+        self::VK => 'Hybridauth\\Provider\\Vkontakte',
+        self::YANDEX => 'Hybridauth\\Provider\\Yandex',
+        self::ODNOKLASSNIKI => 'Hybridauth\\Provider\\Odnoklassniki',
     ];
-
 
     public function socialAuth(string $provider) : bool
     {
         $provider_name = $this->providers_classes[$provider];
 
         $config = [
-            'callback'  => URL::current(),
+            'callback'  => URL::base(true).URL::current(),
             'keys' => $this->providers[$provider]
         ];
 
+        /**
+         * @var $adapter AdapterInterface
+         */
         $adapter = new $provider_name($config, null, new SocialStorage());
 
-        if (!$adapter->isConnected()) {
-            $adapter->authenticate();
+        DB::begin();
+        try {
+
+            if (!$adapter->isConnected()) {
+                $adapter->authenticate();
+            }
+
+            $profile = $adapter->getUserProfile();
+
+            // Convert HybridAuthProfile to our SocialProfile
+            $profile = new SocialProfile($profile);
+
+            $social = UserSocial::where([
+                ['identity', '=', $profile->identifier],
+                ['network', '=', $provider],
+            ])->one();
+
+            $userModel = $this->getUserModel();
+
+            if ($social !== null) {
+                $user = $userModel::oneOrFail($social->user_id);
+                return $this->loginSocialUser($user);
+            }
+
+            $user = null;
+
+            if ($this->join_accounts && $profile->email) {
+                $user = $userModel::findUser($profile->email);
+            }
+
+            if (!$user) {
+                $user = $userModel::createUserFromSocial($profile);
+            }
+
+            $social = new UserSocial([
+                'network' => $provider,
+                'user_id' => $user->id,
+                'identity' => $profile->identifier,
+            ]);
+            $social->create();
+
+            return $this->loginSocialUser($user);
+
+        } catch (\Throwable $t) {
+            Log::error($t);
+            DB::rollback();
+        } finally {
+            DB::commit();
+            $adapter->disconnect();
         }
-
-        $profile = $adapter->getUserProfile();
-
-        $social = UserSocial::where([
-            ['identity', '=', $profile->identifier],
-            ['network', '=', $provider],
-        ])->one();
-
-        if ($social !== null) {
-            $user = $this->getUserModel()::oneOrFail($social->user_id);
-            return $this->login_user($user, $social);
-        }
-
-        if ($profile->email && $user = $this->getUserModel()->findUser($profile->email)) {
-
-        }
-
-        // В ином случае поищем пользователя по email
-        $user = $this->find_existed_user($profile, $adapter);
-
-        // Если не найден, то создадим нового пользователя
-        if (!$user) {
-            $user = $this->create_user($profile, $provider);
-        }
-        // Создадим новую привязку к аккаунту в соц.сети
-        $social = new UserSocial([
-            'network' => $provider,
-            'user_id' => $user->id,
-            'identity' => $profile->identifier,
-        ]);
-        $social->create();
-
-        Log::info('new social autorize', $social);
-
-        return $this->login_user($user, $social);
-
+        return false;
     }
 
-    private function loginSocialUser(User $user, UserSocial $social): bool
+    private function loginSocialUser(User $user): bool
     {
         if (!$user->canLogin()) {
             return false;
@@ -89,13 +111,5 @@ class SocialAuth extends Auth {
         $this->forceLogin($user);
 
         return true;
-    }
-
-    private function findExistedUser(Profile $profile): ?User
-    {
-        if ($profile->email) {
-            return User::where(['username' => mb_strtolower($profile->email)])->one();
-        }
-        return null;
     }
 }

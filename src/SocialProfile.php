@@ -2,8 +2,12 @@
 
 namespace mii\auth;
 
+use Hybridauth\User\Profile;
+use mii\util\UTF8;
 
-class SocialProfile {
+class SocialProfile
+{
+    public $network = '';
 
     /**
      * The Unique user's ID on the connected provider
@@ -11,7 +15,6 @@ class SocialProfile {
      * @var integer
      */
     public $identifier = null;
-
 
     /**
      * URL link to user photo or avatar
@@ -43,32 +46,11 @@ class SocialProfile {
     public $gender = null;
 
     /**
-     * Language
-     *
-     * @var string
-     */
-    public $language = null;
-
-    /**
-     * User age, we don't calculate it. we return it as is if the IDp provide it.
-     *
-     * @var integer
-     */
-    public $age = null;
-
-    /**
      * User email. Note: not all of IDp grant access to the user email
      *
      * @var string
      */
     public $email = null;
-
-    /**
-     * Verified user email. Note: not all of IDp grant access to verified user email
-     *
-     * @var string
-     */
-    public $emailVerified = null;
 
     /**
      * Phone number
@@ -77,4 +59,21 @@ class SocialProfile {
      */
     public $phone = null;
 
+
+    public function __construct(Profile $profile, string $network = '')
+    {
+        $this->network = $network;
+        $this->identifier = $profile->identifier;
+        $this->photoURL = $profile->photoURL;
+        $this->firstName = UTF8::strip4b($profile->firstName);
+        $this->lastName = UTF8::strip4b($profile->lastName);
+
+        if (! $this->lastName && mb_strpos($this->firstName, ' ') !== false) {
+            [$this->firstName, $this->lastName] = explode(' ', $this->firstName, 2);
+        }
+
+        $this->gender   = $profile->gender;
+        $this->email    = $profile->email;
+        $this->phone    = $profile->phone;
+    }
 }

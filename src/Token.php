@@ -44,7 +44,7 @@ class Token extends ORM
     }
 
 
-    public function deleteAllUserTokens(int $user_id)
+    public static function deleteAllUserTokens(int $user_id)
     {
         return static::query()
             ->delete()
@@ -60,7 +60,7 @@ class Token extends ORM
      * @return    Token
      * @return    null
      */
-    public function getToken(string $token): ?Token
+    public static function getToken(string $token): ?Token
     {
         return static::find()->where('token', '=', $token)->one();
     }
