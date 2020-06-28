@@ -104,7 +104,7 @@ class Auth extends Component
             return false;
         }
 
-        $username = mb_strtolower($username);
+        $username = \mb_strtolower($username);
 
         $user = $this->getUserModel()->findUser($username);
 
@@ -184,7 +184,7 @@ class Auth extends Component
         // Create a new autologin token
         $token = (new Token)->set([
             'user_id' => $user_id,
-            'expires' => time() + $this->lifetime
+            'expires' => \time() + $this->lifetime,
         ]);
         $token->create();
 
@@ -213,13 +213,13 @@ class Auth extends Component
      */
     public function hash(string $password): string
     {
-        return password_hash($password, PASSWORD_BCRYPT, ['cost' => $this->hash_cost]);
+        return \password_hash($password, \PASSWORD_BCRYPT, ['cost' => $this->hash_cost]);
     }
 
 
     public function verifyPassword(string $password, string $hash): bool
     {
-        return password_verify($password, $hash);
+        return \password_verify($password, $hash);
     }
 
 
@@ -311,7 +311,7 @@ class Auth extends Component
             }
         }
 
-        Mii::log(Logger::NOTICE, "Token is invalid".$token_str, __METHOD__);
+        Mii::log(Logger::NOTICE, 'Token is invalid'.$token_str, __METHOD__);
         \Mii::$app->request->deleteCookie($this->token_cookie);
         return null;
     }

@@ -65,11 +65,11 @@ class SocialProfile
         $this->network = $network;
         $this->identifier = $profile->identifier;
         $this->photoURL = $profile->photoURL;
-        $this->firstName = UTF8::strip4b($profile->firstName);
-        $this->lastName = UTF8::strip4b($profile->lastName);
+        $this->firstName = UTF8::strip4b((string) $profile->firstName);
+        $this->lastName = UTF8::strip4b((string) $profile->lastName);
 
-        if (! $this->lastName && mb_strpos($this->firstName, ' ') !== false) {
-            [$this->firstName, $this->lastName] = explode(' ', $this->firstName, 2);
+        if (!$this->lastName && \mb_strpos($this->firstName, ' ') !== false) {
+            [$this->firstName, $this->lastName] = \explode(' ', $this->firstName, 2);
         }
 
         $this->gender   = $profile->gender;

@@ -12,7 +12,7 @@ abstract class User extends ORM
 
     protected function onCreate()
     {
-        if(!$this->get('roles')) {
+        if (!$this->get('roles')) {
             $this->roles = 0;
         }
     }
@@ -35,7 +35,7 @@ abstract class User extends ORM
 
     public function addRole(int $role)
     {
-        assert(isset(static::$role_names[$role]), "Неизвестная роль");
+        \assert(isset(static::$role_names[$role]), 'Неизвестная роль');
 
         if ($this->get('roles') === null) {
             $this->roles = $role;
@@ -48,11 +48,11 @@ abstract class User extends ORM
     public function hasRole($roles): bool
     {
         if (!\is_array($roles)) {
-            $roles = (array)$roles;
+            $roles = (array) $roles;
         }
 
         foreach ($roles as $role) {
-            if ((int)$this->roles & $role) {
+            if ((int) $this->roles & $role) {
                 return true;
             }
         }
@@ -73,7 +73,7 @@ abstract class User extends ORM
     public function getRoles(): array
     {
         $list = [];
-        $this->roles = (int)$this->roles;
+        $this->roles = (int) $this->roles;
         foreach (static::$role_names as $role => $name) {
             if ($this->roles & $role) {
                 $list[] = $role;
@@ -87,7 +87,7 @@ abstract class User extends ORM
     public function getRolesDesc(): array
     {
         $list = [];
-        $this->roles = (int)$this->roles;
+        $this->roles = (int) $this->roles;
         foreach (static::$role_names as $role => $name) {
             if ($this->roles & $role) {
                 $list[] = $name;
@@ -106,8 +106,8 @@ abstract class User extends ORM
     public static function genExpiringToken(): string
     {
         // Nevermind. Just reducing time accuracy by 2 times
-        $time = pack('N', time() >> 1);
-        return Text::b64Encode(random_bytes(16) . $time);
+        $time = \pack('N', \time() >> 1);
+        return Text::b64Encode(\random_bytes(16) . $time);
     }
 
     /**
@@ -123,11 +123,11 @@ abstract class User extends ORM
             return false;
         }
 
-        $data = \unpack('Ntime', substr($token, 16, 4));
+        $data = \unpack('Ntime', \substr($token, 16, 4));
 
         $time = $ttl + $data['time'];
 
-        return ($time > time() >> 1);
+        return ($time > \time() >> 1);
     }
 
 
@@ -137,7 +137,7 @@ abstract class User extends ORM
      */
     public static function deleteExpiredReminders(bool $force = false): void
     {
-        if ($force || mt_rand(1, 10) === 1) {
+        if ($force || \mt_rand(1, 10) === 1) {
             return;
         }
 
@@ -153,7 +153,7 @@ abstract class User extends ORM
                 }
             });
 
-        if (!count($tonull)) {
+        if (!\count($tonull)) {
             return;
         }
 
@@ -161,7 +161,7 @@ abstract class User extends ORM
              ->update()
              ->set(
                  [
-                     'verify_code' => null
+                     'verify_code' => null,
                  ]
              )
              ->where('id', 'IN', $tonull)
@@ -172,7 +172,6 @@ abstract class User extends ORM
 
     public function avatarFromUrl(string $file)
     {
-
     }
 
 
@@ -182,7 +181,8 @@ abstract class User extends ORM
             'name' => e($pf->firstName),
             'surname' => e($pf->lastName),
             'username' => $pf->email ?: $pf->identifier,
-            'password' => Text::b64Encode(random_bytes(10)),
+            'password' => Text::b64Encode(\random_bytes(10)),
+            'roles' => 1
         ]);
 
         $user->create();

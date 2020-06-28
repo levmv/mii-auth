@@ -13,7 +13,7 @@ class SocialAuth extends Auth
     public const VK = 'vk';
     public const ODNOKLASSNIKI = 'ok';
     public const YANDEX = 'ya';
-    public const INSTAGRAM = 'inst';
+    public const INSTAGRAM = 'ig';
 
     protected bool $join_accounts = true;
 
@@ -41,7 +41,7 @@ class SocialAuth extends Auth
 
         $config = [
             'callback'  => URL::base(true).URL::current(),
-            'keys' => $this->providers[$provider]
+            'keys' => $this->providers[$provider],
         ];
 
         /**
@@ -51,7 +51,6 @@ class SocialAuth extends Auth
 
         DB::begin();
         try {
-
             if (!$adapter->isConnected()) {
                 $adapter->authenticate();
             }
@@ -91,7 +90,6 @@ class SocialAuth extends Auth
             $social->create();
 
             return $this->loginSocialUser($user);
-
         } catch (\Throwable $t) {
             Log::error($t);
             DB::rollback();

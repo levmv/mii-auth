@@ -24,9 +24,9 @@ class Token extends ORM
 
     public function onCreate()
     {
-        $this->token = Text::b64Encode(random_bytes(24));
+        $this->token = Text::b64Encode(\random_bytes(24));
 
-        if (mt_rand(1, 100) === 1) {
+        if (\mt_rand(1, 100) === 1) {
             // Do garbage collection
             static::deleteExpired();
         }
@@ -39,7 +39,7 @@ class Token extends ORM
     {
         static::query()
             ->delete()
-            ->where('expires', '<', time())
+            ->where('expires', '<', \time())
             ->execute();
     }
 

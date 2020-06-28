@@ -58,7 +58,7 @@ class SocialStorage implements StorageInterface
     {
         $keys = \Mii::$app->session->get(static::SOCIAL_KEYS, []);
         foreach ($keys as $k => $v) {
-            if (strstr($k, $key)) {
+            if (\strstr($k, $key)) {
                 unset($keys[$k]);
             }
         }
