@@ -5,7 +5,7 @@ namespace mii\auth;
 use Hybridauth\Adapter\AdapterInterface;
 use mii\db\DB;
 use mii\log\Log;
-use mii\util\URL;
+use mii\util\Url;
 
 class SocialAuth extends Auth
 {
@@ -40,7 +40,7 @@ class SocialAuth extends Auth
         $provider_name = $this->providers_classes[$provider];
 
         $config = [
-            'callback'  => URL::base(true).URL::current(),
+            'callback'  => Url::base(true).Url::current(),
             'keys' => $this->providers[$provider],
         ];
 
