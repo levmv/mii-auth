@@ -182,7 +182,7 @@ abstract class User extends ORM
             'surname' => e($pf->lastName),
             'username' => $pf->email ?: $pf->identifier,
             'password' => Text::b64Encode(\random_bytes(10)),
-            'roles' => 1
+            'roles' => 1,
         ]);
 
         $user->create();
