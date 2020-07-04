@@ -15,6 +15,7 @@ abstract class User extends ORM
         if (!$this->get('roles')) {
             $this->roles = 0;
         }
+        $this->created = time();
     }
 
     protected function onChange()
@@ -24,9 +25,15 @@ abstract class User extends ORM
         }
     }
 
-    abstract public function completeLogin();
+    public function completeLogin()
+    {
+        $this->last_login = time();
+    }
 
-    abstract public function canLogin(): bool;
+    public function canLogin(): bool
+    {
+        return $this->hasRole(static::ROLE_LOGIN);
+    }
 
     public static function findUser($username): ?self
     {
@@ -148,7 +155,7 @@ abstract class User extends ORM
             ->where('verify_code', 'IS NOT', null)
             ->get()
             ->each(static function (User $u) use ($tonull) {
-                if (!self::isValidToken($u->verify_code)) {
+                if (!static::isValidToken($u->verify_code)) {
                     $tonull[] = $u->id;
                 }
             });
