@@ -40,7 +40,7 @@ class SocialAuth extends Auth
         $provider_name = $this->providers_classes[$provider];
 
         $config = [
-            'callback'  => Url::base(true).Url::current(),
+            'callback'  => Url::base(true).\Mii::$app->request->uri(),
             'keys' => $this->providers[$provider],
         ];
 
