@@ -151,7 +151,7 @@ abstract class User extends ORM
         $tonull = [];
 
         $codes = static::find()
-            ->select(['id', 'verify_code'])
+            ->select('id', 'verify_code')
             ->where('verify_code', 'IS NOT', null)
             ->get()
             ->each(static function (User $u) use ($tonull) {
