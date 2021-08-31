@@ -49,7 +49,7 @@ class Auth extends Component
      * @return  mixed
      * @throws \mii\db\ModelNotFoundException
      */
-    public function getUser(): ?User
+    public function getUser(bool $autoLogin = true): ?User
     {
         if ($this->_user) {
             return $this->_user;
@@ -67,7 +67,7 @@ class Auth extends Component
         }
 
         // check for "remembered" login
-        if (!$this->_user && Mii::$app->request->getCookie($this->token_cookie, false)) {
+        if ($autoLogin && !$this->_user && Mii::$app->request->getCookie($this->token_cookie, false)) {
             $this->autoLogin();
         }
         // If somehow our user was corrupted
