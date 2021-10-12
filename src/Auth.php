@@ -15,7 +15,7 @@ use mii\web\Session;
  */
 class Auth extends Component
 {
-    protected Session $_session;
+    protected ?Session $_session = null;
 
     protected ?User $_user = null;
 
@@ -38,7 +38,15 @@ class Auth extends Component
     public function init(array $config = []): void
     {
         parent::init($config);
-        $this->_session = \Mii::$app->session;
+    }
+
+
+    public function session(): Session
+    {
+        if(!$this->_session) {
+            $this->_session = \Mii::$app->session;
+        }
+        return $this->_session;
     }
 
 
@@ -55,12 +63,12 @@ class Auth extends Component
             return $this->_user;
         }
 
-        if ($this->_session->checkCookie()) {
+        if ($this->session()->checkCookie()) {
             try {
-                $this->_user = $this->_session->get($this->session_key);
+                $this->_user = $this->session()->get($this->session_key);
             } catch (\Throwable $e) {
                 $this->_user = null;
-                $this->_session->delete($this->session_key);
+                $this->session()->delete($this->session_key);
                 Mii::error($e, __METHOD__);
                 return null;
             }
@@ -85,7 +93,7 @@ class Auth extends Component
      */
     public function setUser(User $user): void
     {
-        $this->_session->set($this->session_key, $user);
+        $this->session()->set($this->session_key, $user);
         $this->_user = $user;
     }
 
@@ -146,7 +154,7 @@ class Auth extends Component
     public function logout($destroy = false, $logout_all = false): bool
     {
         // Set by force_login()
-        $this->_session->delete('auth_forced');
+        $this->session()->delete('auth_forced');
 
         if ($token = Mii::$app->request->getCookie($this->token_cookie)) {
             // Delete the autologin cookie to prevent re-login
@@ -164,13 +172,13 @@ class Auth extends Component
 
         if ($destroy === true) {
             // Destroy the session completely
-            $this->_session->destroy();
+            $this->session()->destroy();
         } else {
             // Remove the user from the session
-            $this->_session->delete($this->session_key);
+            $this->session()->delete($this->session_key);
 
             // Regenerate session_id
-            $this->_session->regenerate();
+            $this->session()->regenerate();
         }
 
         $this->_user = null;
@@ -226,7 +234,7 @@ class Auth extends Component
     protected function completeLogin(User $user): bool
     {
         // Regenerate session_id
-        $this->_session->regenerate();
+        $this->session()->regenerate();
 
         $this->setUser($user);
 
@@ -266,7 +274,7 @@ class Auth extends Component
     {
         if ($mark_session_as_forced === true) {
             // Mark the session as forced, to prevent users from changing account information
-            $this->_session->set('auth_forced', true);
+            $this->session()->set('auth_forced', true);
         }
 
         $this->setAutologin($user->id);
