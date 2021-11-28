@@ -7,7 +7,7 @@ use mii\util\UTF8;
 
 class SocialProfile
 {
-    public $network = '';
+    public string $network = '';
 
     /**
      * The Unique user's ID on the connected provider
@@ -21,7 +21,7 @@ class SocialProfile
      *
      * @var string
      */
-    public $photoURL = null;
+    public ?string $photoURL = null;
 
 
     /**
@@ -29,35 +29,35 @@ class SocialProfile
      *
      * @var string
      */
-    public $firstName = null;
+    public ?string $firstName = null;
 
     /**
      * User's last name
      *
      * @var string
      */
-    public $lastName = null;
+    public ?string $lastName = null;
 
     /**
      * male or female
      *
      * @var string
      */
-    public $gender = null;
+    public ?string $gender = null;
 
     /**
      * User email. Note: not all of IDp grant access to the user email
      *
      * @var string
      */
-    public $email = null;
+    public ?string $email = null;
 
     /**
      * Phone number
      *
      * @var string
      */
-    public $phone = null;
+    public ?string $phone = null;
 
 
     public function __construct(Profile $profile, string $network = '')

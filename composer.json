@@ -4,11 +4,12 @@
   "type": "library",
   "minimum-stability": "dev",
   "require": {
-    "levmorozov/mii": "~1.10",
-    "php": ">=7.4"
+    "levmorozov/mii": "~1.11",
+    "php": ">=8.0",
+    "ext-mbstring": "*"
   },
   "require-dev": {
-    "hybridauth/hybridauth": "3"
+    "hybridauth/hybridauth": "3.7"
   },
   "suggest": {
     "hybridauth/hybridauth": "Allows social authentification"

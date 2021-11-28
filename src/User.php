@@ -141,20 +141,21 @@ abstract class User extends ORM
     /**
      * Delete all expired verify_codes
      * @param bool $force
+     * @throws \mii\db\DatabaseException
      */
     public static function deleteExpiredReminders(bool $force = false): void
     {
-        if ($force || \mt_rand(1, 10) === 1) {
+        if (!$force && \mt_rand(1, 10) !== 1) {
             return;
         }
 
         $tonull = [];
 
-        $codes = static::find()
+        static::find()
             ->select('id', 'verify_code')
             ->where('verify_code', 'IS NOT', null)
             ->get()
-            ->each(static function (User $u) use ($tonull) {
+            ->each(static function (User $u) use (&$tonull) {
                 if (!static::isValidToken($u->verify_code)) {
                     $tonull[] = $u->id;
                 }

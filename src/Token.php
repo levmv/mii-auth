@@ -3,7 +3,6 @@
 namespace mii\auth;
 
 use mii\db\ORM;
-use mii\db\Query;
 use mii\util\Text;
 
 /**
@@ -34,6 +33,7 @@ class Token extends ORM
 
     /**
      * Deletes all expired tokens.
+     * @noinspection PhpUnhandledExceptionInspection
      */
     public static function deleteExpired() : void
     {
@@ -44,9 +44,10 @@ class Token extends ORM
     }
 
 
-    public static function deleteAllUserTokens(int $user_id)
+    /** @noinspection PhpUnhandledExceptionInspection */
+    public static function deleteAllUserTokens(int $user_id): void
     {
-        return static::query()
+        static::query()
             ->delete()
             ->where('user_id', '=', $user_id)
             ->execute();
@@ -57,8 +58,7 @@ class Token extends ORM
      * Loads a token.
      *
      * @param string $token
-     * @return    Token
-     * @return    null
+     * @return Token|null
      */
     public static function getToken(string $token): ?Token
     {

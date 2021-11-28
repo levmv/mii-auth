@@ -44,7 +44,7 @@ class Auth extends Component
     public function session(): Session
     {
         if(!$this->_session) {
-            $this->_session = \Mii::$app->session;
+            $this->_session = Mii::$app->session;
         }
         return $this->_session;
     }
@@ -251,7 +251,7 @@ class Auth extends Component
      * @return  boolean
      * @throws \mii\db\ModelNotFoundException
      */
-    public function checkPassword($password): bool
+    public function checkPassword(string $password): bool
     {
         $user = $this->getUser();
 
@@ -266,11 +266,11 @@ class Auth extends Component
     /**
      * Forces a user to be logged in, without specifying a password.
      *
-     * @param User    $user
+     * @param User $user
      * @param boolean $mark_session_as_forced mark the session as forced
-     * @return  boolean
+     * @return void
      */
-    public function forceLogin(User $user, $mark_session_as_forced = false)
+    public function forceLogin(User $user, bool $mark_session_as_forced = false): void
     {
         if ($mark_session_as_forced === true) {
             // Mark the session as forced, to prevent users from changing account information
@@ -281,15 +281,12 @@ class Auth extends Component
 
         // Run the standard completion
         $this->completeLogin($user);
-
-        return true;
     }
 
     /**
      * Logs a user in, based on the token cookie.
      *
-     * @return  mixed
-     * @throws \mii\db\ModelNotFoundException
+     * @return User|null
      */
     public function autoLogin(): ?User
     {
@@ -300,7 +297,7 @@ class Auth extends Component
         }
 
         // Load the token and user
-        $token = Token::where(['token', '=', $token_str])->one();
+        $token = Token::where('token', '=', $token_str)->one();
 
         if ($token !== null) {
             $user = \call_user_func([$this->user_model, 'one'], $token->user_id);
@@ -320,7 +317,7 @@ class Auth extends Component
         }
 
         Mii::log(Logger::NOTICE, 'Token is invalid'.$token_str, __METHOD__);
-        \Mii::$app->request->deleteCookie($this->token_cookie);
+        Mii::$app->request->deleteCookie($this->token_cookie);
         return null;
     }
 }
