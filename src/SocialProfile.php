@@ -18,44 +18,32 @@ class SocialProfile
 
     /**
      * URL link to user photo or avatar
-     *
-     * @var string
      */
     public ?string $photoURL = null;
 
 
     /**
      * User's first name
-     *
-     * @var string
      */
     public ?string $firstName = null;
 
     /**
      * User's last name
-     *
-     * @var string
      */
     public ?string $lastName = null;
 
     /**
      * male or female
-     *
-     * @var string
      */
     public ?string $gender = null;
 
     /**
      * User email. Note: not all of IDp grant access to the user email
-     *
-     * @var string
      */
     public ?string $email = null;
 
     /**
      * Phone number
-     *
-     * @var string
      */
     public ?string $phone = null;
 

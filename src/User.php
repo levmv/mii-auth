@@ -141,7 +141,6 @@ abstract class User extends ORM
     /**
      * Delete all expired verify_codes
      * @param bool $force
-     * @throws \mii\db\DatabaseException
      */
     public static function deleteExpiredReminders(bool $force = false): void
     {
@@ -167,11 +166,7 @@ abstract class User extends ORM
 
         static::query()
              ->update()
-             ->set(
-                 [
-                     'verify_code' => null,
-                 ]
-             )
+             ->set(['verify_code' => null])
              ->where('id', 'IN', $tonull)
              ->execute();
 

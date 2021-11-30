@@ -54,8 +54,8 @@ class Auth extends Component
      * Gets the currently logged in user from the session (with auto_login check).
      * Returns FALSE if no user is currently logged in.
      *
-     * @return  mixed
-     * @throws \mii\db\ModelNotFoundException
+     * @param bool $autoLogin
+     * @return User|null
      */
     public function getUser(bool $autoLogin = true): ?User
     {
@@ -145,13 +145,10 @@ class Auth extends Component
      * Log a user out and remove any autologin cookies.
      *
      * @param boolean $destroy completely destroy the session
-     * @param boolean $logout_all remove all tokens for user
-     * @return  boolean
-     * @throws \mii\core\Exception
-     * @throws \mii\db\DatabaseException
-     * @throws \mii\db\ModelNotFoundException
+     * @param boolean $logoutAll remove all tokens for user
+     * @return boolean
      */
-    public function logout($destroy = false, $logout_all = false): bool
+    public function logout(bool $destroy = false, bool $logoutAll = false): bool
     {
         // Set by force_login()
         $this->session()->delete('auth_forced');
@@ -163,7 +160,7 @@ class Auth extends Component
             // Clear the autologin token from the database
             $token = Token::getToken($token);
 
-            if ($logout_all && $token) {
+            if ($logoutAll && $token) {
                 (new Query)->delete($token::table())->where('user_id', '=', $token->user_id)->execute();
             } elseif ($token) {
                 $token->delete();

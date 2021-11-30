@@ -2,6 +2,7 @@
 
 namespace mii\auth;
 
+use Mii;
 use mii\core\ACL;
 use mii\web\ForbiddenHttpException;
 
@@ -18,7 +19,7 @@ trait CheckAccess
     {
         $acl = $this->accessRules();
 
-        $roles = \Mii::$app->auth->getUser() ? \Mii::$app->auth->getUser()->getRoles() : '*';
+        $roles = Mii::$app->auth->getUser() ? Mii::$app->auth->getUser()->getRoles() : '*';
 
         if (empty($roles)) {
             $roles = '*';
