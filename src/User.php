@@ -194,6 +194,8 @@ abstract class User extends ORM
             $user->avatarFromUrl($pf->photoURL);
         }
 
+        $user->refresh();
+
         return $user;
     }
 }
