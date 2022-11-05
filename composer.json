@@ -1,15 +1,15 @@
 {
-  "name": "levmorozov/mii-auth",
+  "name": "levmv/mii-auth",
   "description": "Mii auth extension",
   "type": "library",
   "minimum-stability": "dev",
   "require": {
-    "levmorozov/mii": "~1.11",
+    "levmv/mii": "~1.11",
     "php": ">=8.0",
     "ext-mbstring": "*"
   },
   "require-dev": {
-    "hybridauth/hybridauth": "3.7"
+    "hybridauth/hybridauth": "dev-master"
   },
   "suggest": {
     "hybridauth/hybridauth": "Allows social authentification"
@@ -25,5 +25,9 @@
     "psr-4": {
       "mii\\auth\\": "src/"
     }
-  }
+  },
+  "repositories": [{
+    "type": "vcs",
+    "url": "https://github.com/levmv/hybridauth"
+  }]
 }
