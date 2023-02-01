@@ -21,7 +21,7 @@ class Token extends ORM
         return 'user_tokens';
     }
 
-    public function onCreate()
+    public function onCreate(): void
     {
         $this->token = Text::b64Encode(\random_bytes(24));
 

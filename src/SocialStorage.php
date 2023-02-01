@@ -9,7 +9,7 @@ class SocialStorage implements StorageInterface
     public const SOCIAL_KEYS = 'SOCIALKEYS';
 
     /**
-     * Retrieve a item from storage
+     * Retrieve an item from storage
      *
      * @param string $key
      *

@@ -10,7 +10,7 @@ abstract class User extends ORM
 {
     public const ROLE_LOGIN = 1;
 
-    protected function onCreate()
+    protected function onCreate(): void
     {
         if (!$this->get('roles')) {
             $this->roles = 0;
@@ -18,7 +18,7 @@ abstract class User extends ORM
         $this->created = time();
     }
 
-    protected function onChange()
+    protected function onChange(): void
     {
         if ($this->changed('password')) {
             $this->password = Mii::$app->auth->hash($this->password);
